@@ -132,8 +132,8 @@ export const generateEnergyCollage = async (tip: string, baseImageBase64: string
 
             Instructions:
             1. **Analyze Style**: Look at the provided input image. Understand its rendering style (e.g. blue blueprint, 3d wireframe, realistic photo, or sketch).
-            2. **Determine Room**: Identify the best room for the tip (e.g. Kitchen for microwave/cooking, Bathroom for water, Living Room for thermostat).
-            3. **GENERATE NEW IMAGE**: Generate a BRAND NEW image of that identified room.
+            2. **Determine Room**: Identify the single best room for the tip (e.g. Kitchen for microwave/cooking, Bathroom for water, Living Room for thermostat).
+            3. **GENERATE NEW IMAGE**: Generate a close-up, interior view of ONLY that specific room. Do NOT show the whole house or floor plan.
             4. **Apply Style**: Ensure this new image uses the EXACT SAME visual style as the input image.
             5. **Integrate Text**: In the style of the image (e.g. as a blueprint label, a sticky note, or integrated text), clearly write the energy tip text "${tip}" inside the image near the relevant object.`,
           },
