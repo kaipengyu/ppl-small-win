@@ -86,7 +86,12 @@ const geocodeAddress = async (address: string): Promise<{ lat: number; lon: numb
 export const fetchWeatherForecast = async (address: string): Promise<WeatherData> => {
   try {
     // @ts-ignore - Vite environment variables
-    const apiKey = import.meta.env.VITE_WEATHER_API_KEY || process.env.WEATHER_API_KEY;
+    let apiKey = import.meta.env.VITE_WEATHER_API_KEY || process.env.WEATHER_API_KEY;
+    
+    // Explicitly handle the case where the key might be the string "false" or "undefined"
+    if (String(apiKey) === 'false' || String(apiKey) === 'undefined') {
+       apiKey = '';
+    }
     
     if (!apiKey) {
       throw new Error('Weather API key not found');
