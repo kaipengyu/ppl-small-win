@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { BillData } from '../types';
 import { generateEnergyCollage, generatePersonaImage } from '../services/geminiService';
+import { fetchWeatherForecast, WeatherData } from '../services/weatherService';
+import { getBestRebate, getHouseholdTip } from '../utils/rebateUtils';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Lightbulb, DollarSign, Home, ExternalLink, CloudSun, Zap, Thermometer } from 'lucide-react';
 import basePhoto from '../src/base-photo.jpg';
 
 interface BillDisplayProps {
@@ -15,8 +19,12 @@ const BillDisplay: React.FC<BillDisplayProps> = ({ data }) => {
   const [collageImage, setCollageImage] = useState<string | null>(null);
   const [personaImage, setPersonaImage] = useState<string | null>(null);
   const [isGeneratingCollage, setIsGeneratingCollage] = useState(false);
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const [isLoadingWeather, setIsLoadingWeather] = useState(false);
   
   const jsonString = JSON.stringify(data, null, 2);
+  const bestRebate = getBestRebate(data);
+  const householdTip = getHouseholdTip(data);
 
   // Automatically generate persona image on load
   useEffect(() => {
@@ -53,6 +61,24 @@ const BillDisplay: React.FC<BillDisplayProps> = ({ data }) => {
 
     return () => { mounted = false; };
   }, [data.energyTip]);
+
+  // Fetch weather data on load
+  useEffect(() => {
+    let mounted = true;
+    const fetchWeather = async () => {
+      setIsLoadingWeather(true);
+      try {
+        const weather = await fetchWeatherForecast(data.serviceAddress);
+        if (mounted) setWeatherData(weather);
+      } catch (err) {
+        console.error("Weather fetch failed:", err);
+      } finally {
+        if (mounted) setIsLoadingWeather(false);
+      }
+    };
+    fetchWeather();
+    return () => { mounted = false; };
+  }, [data.serviceAddress]);
 
   const handleCopy = async () => {
     try {
@@ -127,14 +153,150 @@ const BillDisplay: React.FC<BillDisplayProps> = ({ data }) => {
         </div>
       </div>
 
-      {/* Energy Tip Visualization Section */}
+      {/* Energy Tips Section */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="p-6 border-b border-slate-100">
+          <h3 className="text-lg font-bold text-slate-900">Energy Tips</h3>
+        </div>
+
+        <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Tip 1: Existing Energy Tip */}
+          <div className="group bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100 hover:shadow-md transition-all duration-200 flex flex-col">
+            <div className="mb-4">
+              <div className="w-12 h-12 bg-blue-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-200 group-hover:scale-110 transition-transform duration-200">
+                <Lightbulb className="w-6 h-6" />
+              </div>
+            </div>
+            <h4 className="font-bold text-slate-900 mb-2 text-lg">Quick Win</h4>
+            <p className="text-slate-600 leading-relaxed text-sm flex-grow">{data.energyTip}</p>
+          </div>
+
+          {/* Tip 2: Rebate-based Tip */}
+          <a 
+            href="https://pplelectricsavings.com/ppl/sites/ppl/files/2025-07/All_Res_Rebates_Flyer_July2025.pdf?_gl=1*rrwl7x*_gcl_au*MTgyMzg5NjI2NC4xNzYzNDg3NjY4*_ga*MzU3MjAwNzcwLjE3NjM0ODc2Njg.*_ga_79ZMR1DRPS*czE3NjQwMDUxMDQkbzYkZzAkdDE3NjQwMDUxMDQkajYwJGwwJGgw"
+            target="_blank"
+            rel="noopener noreferrer" 
+            className="group bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100 hover:shadow-md transition-all duration-200 flex flex-col cursor-pointer relative"
+          >
+            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+               <ExternalLink className="w-4 h-4 text-green-600" />
+            </div>
+            <div className="mb-4">
+              <div className="w-12 h-12 bg-green-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-green-200 group-hover:scale-110 transition-transform duration-200">
+                <DollarSign className="w-6 h-6" />
+              </div>
+            </div>
+            <h4 className="font-bold text-slate-900 mb-2 text-lg group-hover:text-green-700 transition-colors">Rebate Opportunity</h4>
+            <p className="text-slate-600 leading-relaxed mb-4 text-sm">
+              {bestRebate.reason}
+            </p>
+            <div className="mt-auto bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-green-200/50 group-hover:bg-white/80 transition-colors">
+              <p className="text-xs text-slate-600 mb-1 font-medium">
+                <span className="text-green-700">{bestRebate.name}</span>
+              </p>
+              <p className="text-sm font-bold text-slate-900">Save up to <span className="text-green-600">{bestRebate.amount}</span></p>
+            </div>
+          </a>
+
+          {/* Tip 3: Household-based Tip */}
+          <div className="group bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-100 hover:shadow-md transition-all duration-200 flex flex-col">
+            <div className="mb-4">
+              <div className="w-12 h-12 bg-purple-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-purple-200 group-hover:scale-110 transition-transform duration-200">
+                <Home className="w-6 h-6" />
+              </div>
+            </div>
+            <h4 className="font-bold text-slate-900 mb-2 text-lg">Home Efficiency</h4>
+            <p className="text-slate-600 leading-relaxed text-sm flex-grow">{householdTip}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Weather Forecast Section */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="p-6 border-b border-slate-100">
+          <h3 className="text-lg font-bold text-slate-900">7-Day Weather Forecast</h3>
+        </div>
+
+        <div className="p-6">
+          {isLoadingWeather ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-10 h-10 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin"></div>
+              <span className="ml-3 text-slate-600">Loading weather data...</span>
+            </div>
+          ) : weatherData && weatherData.forecasts.length > 0 ? (
+            <div className="space-y-8">
+              {/* Merged Forecast Summary & Energy Impact */}
+              <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl p-6 border border-slate-200 shadow-sm">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-blue-100 rounded-lg text-blue-600">
+                     <CloudSun className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-lg mb-2">Weekly Outlook</h4>
+                    <p className="text-slate-700 leading-relaxed mb-3">{weatherData.summary}</p>
+                    <div className="flex items-center gap-2 text-amber-700 text-sm font-medium bg-amber-50 px-3 py-2 rounded-md border border-amber-100 inline-block">
+                      <Thermometer className="w-4 h-4" />
+                      {weatherData.energyImpact}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                {/* Weather Chart */}
+                <div className="lg:col-span-2 p-4">
+                   <h4 className="text-sm font-semibold text-slate-500 mb-4 uppercase tracking-wider">Temperature Trend</h4>
+                   <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={weatherData.forecasts.map(f => ({
+                      date: new Date(f.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                      high: f.high,
+                      low: f.low
+                    }))}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                      <XAxis dataKey="date" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
+                      <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} label={{ value: '°F', angle: -90, position: 'insideLeft' }} />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                        formatter={(value: number) => [`${value}°F`, '']}
+                      />
+                      <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                      <Line type="monotone" dataKey="high" stroke="#ef4444" strokeWidth={3} name="High Temp" dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                      <Line type="monotone" dataKey="low" stroke="#3b82f6" strokeWidth={3} name="Low Temp" dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Weather Energy Tip */}
+                <div className="bg-blue-50 rounded-xl p-6 border border-blue-100 flex flex-col justify-center relative overflow-hidden h-fit">
+                  <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-blue-100 rounded-full blur-2xl opacity-50"></div>
+                  <div className="relative z-10">
+                    <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white mb-4 shadow-md">
+                       <Zap className="w-5 h-5" />
+                    </div>
+                    <h4 className="font-bold text-slate-900 mb-2">Weather Tip</h4>
+                    <p className="text-slate-700 text-sm leading-relaxed">
+                      {weatherData.tip}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-slate-500">
+              <p>Unable to load weather data. Please check your API key configuration.</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Energy Tip Visualization Section - Commented Out */}
+      {/*
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="p-6 border-b border-slate-100">
           <h3 className="text-lg font-bold text-slate-900">Visualize Your Savings</h3>
         </div>
 
         <div className="p-6">
-          {/* Image Display Area */}
           <div className="w-full bg-slate-100 rounded-lg min-h-[400px] flex flex-col items-center justify-center relative overflow-hidden border border-slate-200 mb-4 group">
              {collageImage ? (
                <img src={collageImage} alt="Energy Savings Visualization" className="w-full h-full object-contain animate-fade-in" />
@@ -171,6 +333,7 @@ const BillDisplay: React.FC<BillDisplayProps> = ({ data }) => {
           )}
         </div>
       </div>
+      */}
 
       {/* JSON Display Section */}
       <div className="bg-slate-900 rounded-xl shadow-xl overflow-hidden border border-slate-800">

@@ -48,7 +48,7 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         {/* Hero Section (only visible when no data) */}
         {!billData && !isLoading && (
@@ -63,33 +63,33 @@ const App: React.FC = () => {
         )}
 
         {/* Upload Section */}
-        <div className="max-w-2xl mx-auto mb-12">
-          {!billData && (
-             <FileUpload onFileSelect={handleFileSelect} isLoading={isLoading} />
-          )}
-          
-          {/* Loading State */}
-          {isLoading && (
-            <div className="mt-8 text-center space-y-4">
-              <div className="inline-block relative w-16 h-16">
-                <div className="absolute top-0 left-0 w-full h-full border-4 border-brand-100 rounded-full"></div>
-                <div className="absolute top-0 left-0 w-full h-full border-4 border-brand-500 rounded-full border-t-transparent animate-spin"></div>
+        {!billData && (
+          <div className="max-w-2xl mx-auto mb-12">
+            <FileUpload onFileSelect={handleFileSelect} isLoading={isLoading} />
+            
+            {/* Loading State */}
+            {isLoading && (
+              <div className="mt-8 text-center space-y-4">
+                <div className="inline-block relative w-16 h-16">
+                  <div className="absolute top-0 left-0 w-full h-full border-4 border-brand-100 rounded-full"></div>
+                  <div className="absolute top-0 left-0 w-full h-full border-4 border-brand-500 rounded-full border-t-transparent animate-spin"></div>
+                </div>
+                <p className="text-slate-600 font-medium">Analyzing PDF with Gemini...</p>
+                <p className="text-sm text-slate-400">This may take a few seconds</p>
               </div>
-              <p className="text-slate-600 font-medium">Analyzing PDF with Gemini...</p>
-              <p className="text-sm text-slate-400">This may take a few seconds</p>
-            </div>
-          )}
+            )}
 
-          {/* Error State */}
-          {error && (
-            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex items-center gap-3">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 flex-shrink-0">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-              </svg>
-              {error}
-            </div>
-          )}
-        </div>
+            {/* Error State */}
+            {error && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 flex-shrink-0">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                </svg>
+                {error}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Results Section */}
         {billData && (
