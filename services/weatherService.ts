@@ -129,15 +129,17 @@ export const fetchWeatherForecast = async (address: string): Promise<WeatherData
 
     // Convert to WeatherForecast array (next 7 days)
     const forecasts: WeatherForecast[] = [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize to start of day
+    // Start from tomorrow to ensure we have full day data (avoiding high=low for partial today)
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() + 1);
+    startDate.setHours(0, 0, 0, 0); // Normalize to start of day
     
     // Get all available forecast dates sorted
     const availableDates = Object.keys(dailyForecasts).sort();
     
     for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
       const dateKey = date.toISOString().split('T')[0];
       
       if (dailyForecasts[dateKey]) {
