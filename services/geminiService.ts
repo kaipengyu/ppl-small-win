@@ -38,8 +38,8 @@ const billSchema: Schema = {
       required: ["month", "labelPreviousYear", "labelCurrentYear", "usagePrevious", "usageCurrent", "tempPrevious", "tempCurrent", "dailyCostPrevious", "dailyCostCurrent"]
     },
     personaTitle: { type: Type.STRING, description: "A creative, gamified title for the user based on their energy usage trend (e.g., 'The Eco-Wizard', 'The Power Pioneer')." },
-    personaDescription: { type: Type.STRING, description: "A fun, 2-sentence profile description. It MUST start with a personalized greeting using the customer's first name (e.g. 'Hi Natalie,', 'Greetings Natalie!', 'Ahoy Natalie!') that matches the persona's tone, followed by explaining their title based on their usage." },
-    personaVisualPrompt: { type: Type.STRING, description: "A prompt to generate a 3D Pixar-style avatar image representing this persona (e.g. 'A cute 3d character holding a leaf shield')." }
+    personaDescription: { type: Type.STRING, description: "A neighborly, 2-3 sentence explanation of the usage trend. It should start directly with the observation (e.g. 'I took a look at your bill...') without a greeting." },
+    personaVisualPrompt: { type: Type.STRING, description: "A prompt to generate a realistic photo of a friendly African American woman neighbor giving an encouraging nod or smile. She should look like she is interacting with a neighbor. Based on the usage trend, her expression should be: Happy/Proud if usage decreased, Encouraging/Supportive if usage increased." }
   },
   required: ["customerName", "customerFirstName", "serviceAddress", "meterNumber", "accountNumber", "amountDue", "dueDate", "supplyCharges", "deliveryCharges", "energyTip", "priceToCompare", "billMonth", "amountComparisonSentence", "energyTipSentence", "monthlyComparison", "personaTitle", "personaDescription", "personaVisualPrompt"]
 };
@@ -62,11 +62,27 @@ export const analyzeBill = async (base64Pdf: string): Promise<BillData> => {
             
             LOGIC FOR PERSONA:
             Compare the 'Current 12 Months' usage or the specific month usage to the previous year.
-            1. If usage decreased significantly (>10%): Assign a title like "The Eco-Guardian" or "Efficiency Ninja". Description should praise their planet-saving skills.
-            2. If usage is about the same: Assign a title like "The Steady Captain". Description should talk about consistency.
-            3. If usage increased: Assign a title like "The High-Voltage Hero" or "The Comfort Seeker". Description should be playful about using lots of power for gadgets or AC, suggesting they are living life to the fullest (but could save a bit).
             
-            IMPORTANT: The 'personaDescription' MUST start with a personalized greeting using the Customer First Name (e.g. "Hi [Name],", "Greetings [Name]!", "Way to go [Name]!") that matches the persona's tone.
+            TONE: Neighborly. Observant. Friendly. Grounded. Encourages by showing what others are doing.
+            - The tone feels like the kind neighbor who gives you a quiet nod of encouragement.
+            - Never pushy. Never salesy.
+            - Builds confidence by giving context from the community.
+            
+            How it sounds:
+            - "I took a look at your bill and noticed a few things I see in a lot of homes around you."
+            - "Many customers in your area start with this step because it feels simple and makes a real difference."
+            
+            Emotional goal:
+            - You are not alone.
+            - You are part of a capable community.
+            - You can do this at your own pace.
+            - PPL has your back.
+
+            1. If usage decreased significantly (>10%): Title: "The Eco-Guardian". Description should highlight how their usage looks like other efficient homes in the area.
+            2. If usage is about the same: Title: "The Steady Captain". Description should mention many neighbors also see consistent usage and start with small steps.
+            3. If usage increased: Title: "The High-Voltage Hero". Description should note that they aren't the only one seeing this pattern and suggest what usually works next.
+            
+            IMPORTANT: The 'personaDescription' should NOT start with "HEY NEIGHBOR!". It should start directly with the neighborly observation.
             
             Extract all data into the JSON structure:`
           }
@@ -96,7 +112,7 @@ export const generatePersonaImage = async (prompt: string): Promise<string> => {
       contents: {
         parts: [
           {
-            text: `Generate a high quality, square aspect ratio, 3D Pixar-style avatar icon on a solid colorful background. ${prompt}`
+            text: `Generate a high quality, realistic photo portrait of a friendly African American woman neighbor, smiling and looking helpful. She should be dressed casually in a jacket or sweater, standing near a brick house or front porch. The style should be warm and inviting, like a real photograph. ${prompt}`
           }
         ]
       }

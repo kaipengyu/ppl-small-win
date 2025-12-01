@@ -107,7 +107,7 @@ const BillDisplay: React.FC<BillDisplayProps> = ({ data }) => {
   return (
     <div className="w-full max-w-4xl mx-auto animate-fade-in space-y-8">
       {/* Persona Profile Card */}
-      <div className="bg-gradient-to-br from-indigo-900 to-brand-900 rounded-2xl shadow-xl overflow-hidden text-white">
+      <div className="bg-gradient-to-br from-brand-700 to-brand-900 rounded-2xl shadow-xl overflow-hidden text-white">
         <div className="flex flex-col md:flex-row items-center p-8 gap-8">
           
           {/* Avatar Section */}
@@ -120,30 +120,26 @@ const BillDisplay: React.FC<BillDisplayProps> = ({ data }) => {
               )}
             </div>
             {/* Status Badge */}
-            <div className="absolute -bottom-2 -right-2 bg-yellow-400 text-indigo-900 text-xs font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider">
-              {data.billMonth} Profile
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-ppl-orange text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider whitespace-nowrap">
+              {data.billMonth} Review
             </div>
           </div>
 
           {/* Text Content */}
           <div className="flex-1 text-center md:text-left space-y-3">
-            <div className="space-y-1">
-              <h3 className="text-brand-200 font-medium tracking-wider text-sm uppercase">Energy Persona</h3>
-              <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight">{data.personaTitle}</h2>
-            </div>
             
-            <p className="text-indigo-100 text-lg leading-relaxed font-light">
-              "{data.personaDescription}"
+            <p className="text-brand-100 text-lg leading-relaxed font-light">
+              <span className="font-bold text-3xl text-white">HEY NEIGHBOR!</span> {data.personaDescription.replace(/^HEY NEIGHBOR![\s,]*/i, '')}
             </p>
 
             <div className="pt-4 flex flex-wrap gap-4 justify-center md:justify-start">
               <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/10">
-                <p className="text-xs text-indigo-200 uppercase">Amount Due</p>
+                <p className="text-xs text-brand-200 uppercase">Amount Due</p>
                 <p className="font-bold text-xl">${data.amountDue}</p>
               </div>
               <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/10">
-                 <p className="text-xs text-indigo-200 uppercase">Usage Change</p>
-                 <p className={`font-bold text-xl ${data.monthlyComparison.usageCurrent < data.monthlyComparison.usagePrevious ? 'text-green-300' : 'text-yellow-300'}`}>
+                 <p className="text-xs text-brand-200 uppercase">Usage Change</p>
+                 <p className={`font-bold text-xl ${data.monthlyComparison.usageCurrent < data.monthlyComparison.usagePrevious ? 'text-ppl-paleGreen' : 'text-ppl-lightOrange'}`}>
                    {data.monthlyComparison.usageCurrent < data.monthlyComparison.usagePrevious ? '↓' : '↑'} 
                    {Math.abs(Math.round(((data.monthlyComparison.usageCurrent - data.monthlyComparison.usagePrevious) / data.monthlyComparison.usagePrevious) * 100))}%
                  </p>
@@ -161,9 +157,9 @@ const BillDisplay: React.FC<BillDisplayProps> = ({ data }) => {
 
         <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Tip 1: Existing Energy Tip */}
-          <div className="group bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100 hover:shadow-md transition-all duration-200 flex flex-col">
+          <div className="group bg-gradient-to-br from-brand-50 to-brand-100 rounded-xl p-6 border border-brand-100 hover:shadow-md transition-all duration-200 flex flex-col">
             <div className="mb-4">
-              <div className="w-12 h-12 bg-blue-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-200 group-hover:scale-110 transition-transform duration-200">
+              <div className="w-12 h-12 bg-brand-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-brand-200 group-hover:scale-110 transition-transform duration-200">
                 <Lightbulb className="w-6 h-6" />
               </div>
             </div>
@@ -176,32 +172,32 @@ const BillDisplay: React.FC<BillDisplayProps> = ({ data }) => {
             href="https://pplelectricsavings.com/ppl/sites/ppl/files/2025-07/All_Res_Rebates_Flyer_July2025.pdf?_gl=1*rrwl7x*_gcl_au*MTgyMzg5NjI2NC4xNzYzNDg3NjY4*_ga*MzU3MjAwNzcwLjE3NjM0ODc2Njg.*_ga_79ZMR1DRPS*czE3NjQwMDUxMDQkbzYkZzAkdDE3NjQwMDUxMDQkajYwJGwwJGgw"
             target="_blank"
             rel="noopener noreferrer" 
-            className="group bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100 hover:shadow-md transition-all duration-200 flex flex-col cursor-pointer relative"
+            className="group bg-gradient-to-br from-ppl-paleGreen to-brand-50 rounded-xl p-6 border border-ppl-forestGreen/20 hover:shadow-md transition-all duration-200 flex flex-col cursor-pointer relative"
           >
             <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-               <ExternalLink className="w-4 h-4 text-green-600" />
+               <ExternalLink className="w-4 h-4 text-ppl-forestGreen" />
             </div>
             <div className="mb-4">
-              <div className="w-12 h-12 bg-green-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-green-200 group-hover:scale-110 transition-transform duration-200">
+              <div className="w-12 h-12 bg-ppl-forestGreen rounded-2xl flex items-center justify-center text-white shadow-lg shadow-green-200 group-hover:scale-110 transition-transform duration-200">
                 <DollarSign className="w-6 h-6" />
               </div>
             </div>
-            <h4 className="font-bold text-slate-900 mb-2 text-lg group-hover:text-green-700 transition-colors">Rebate Opportunity</h4>
+            <h4 className="font-bold text-slate-900 mb-2 text-lg group-hover:text-ppl-forestGreen transition-colors">Rebate Opportunity</h4>
             <p className="text-slate-600 leading-relaxed mb-4 text-sm">
               {bestRebate.reason}
             </p>
-            <div className="mt-auto bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-green-200/50 group-hover:bg-white/80 transition-colors">
+            <div className="mt-auto bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-ppl-forestGreen/30 group-hover:bg-white/80 transition-colors">
               <p className="text-xs text-slate-600 mb-1 font-medium">
-                <span className="text-green-700">{bestRebate.name}</span>
+                <span className="text-ppl-forestGreen">{bestRebate.name}</span>
               </p>
-              <p className="text-sm font-bold text-slate-900">Save up to <span className="text-green-600">{bestRebate.amount}</span></p>
+              <p className="text-sm font-bold text-slate-900">Save up to <span className="text-ppl-darkGreen">{bestRebate.amount}</span></p>
             </div>
           </a>
 
           {/* Tip 3: Household-based Tip */}
-          <div className="group bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-100 hover:shadow-md transition-all duration-200 flex flex-col">
+          <div className="group bg-gradient-to-br from-ppl-lightOrange to-orange-50 rounded-xl p-6 border border-ppl-orange/20 hover:shadow-md transition-all duration-200 flex flex-col">
             <div className="mb-4">
-              <div className="w-12 h-12 bg-purple-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-purple-200 group-hover:scale-110 transition-transform duration-200">
+              <div className="w-12 h-12 bg-ppl-orange rounded-2xl flex items-center justify-center text-white shadow-lg shadow-orange-200 group-hover:scale-110 transition-transform duration-200">
                 <Home className="w-6 h-6" />
               </div>
             </div>
@@ -226,15 +222,15 @@ const BillDisplay: React.FC<BillDisplayProps> = ({ data }) => {
           ) : weatherData && weatherData.forecasts.length > 0 ? (
             <div className="space-y-8">
               {/* Merged Forecast Summary & Energy Impact */}
-              <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl p-6 border border-slate-200 shadow-sm">
+              <div className="bg-gradient-to-r from-brand-50 to-brand-100 rounded-xl p-6 border border-brand-200 shadow-sm">
                 <div className="flex items-start gap-4">
-                  <div className="p-3 bg-blue-100 rounded-lg text-blue-600">
+                  <div className="p-3 bg-brand-500 rounded-lg text-white shadow-md">
                      <CloudSun className="w-6 h-6" />
                   </div>
                   <div>
                     <h4 className="font-bold text-slate-900 text-lg mb-2">Weekly Outlook</h4>
                     <p className="text-slate-700 leading-relaxed mb-3">{weatherData.summary}</p>
-                    <div className="flex items-center gap-2 text-amber-700 text-sm font-medium bg-amber-50 px-3 py-2 rounded-md border border-amber-100 inline-block">
+                    <div className="flex items-center gap-2 text-ppl-orange text-sm font-medium bg-orange-50 px-3 py-2 rounded-md border border-ppl-orange/20 inline-block">
                       <Thermometer className="w-4 h-4" />
                       {weatherData.energyImpact}
                     </div>
@@ -260,17 +256,17 @@ const BillDisplay: React.FC<BillDisplayProps> = ({ data }) => {
                         formatter={(value: number) => [`${value}°F`, '']}
                       />
                       <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                      <Line type="monotone" dataKey="high" stroke="#ef4444" strokeWidth={3} name="High Temp" dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
-                      <Line type="monotone" dataKey="low" stroke="#3b82f6" strokeWidth={3} name="Low Temp" dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                      <Line type="monotone" dataKey="high" stroke="#E52207" strokeWidth={3} name="High Temp" dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                      <Line type="monotone" dataKey="low" stroke="#0071A8" strokeWidth={3} name="Low Temp" dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
 
                 {/* Weather Energy Tip */}
-                <div className="bg-blue-50 rounded-xl p-6 border border-blue-100 flex flex-col justify-center relative overflow-hidden h-fit">
-                  <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-blue-100 rounded-full blur-2xl opacity-50"></div>
+                <div className="bg-brand-50 rounded-xl p-6 border border-brand-100 flex flex-col justify-center relative overflow-hidden h-fit">
+                  <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-brand-200 rounded-full blur-2xl opacity-50"></div>
                   <div className="relative z-10">
-                    <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white mb-4 shadow-md">
+                    <div className="w-10 h-10 bg-brand-500 rounded-full flex items-center justify-center text-white mb-4 shadow-md">
                        <Zap className="w-5 h-5" />
                     </div>
                     <h4 className="font-bold text-slate-900 mb-2">Weather Tip</h4>
