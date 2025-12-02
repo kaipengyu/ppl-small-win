@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BillData } from '../types';
-import { generateEnergyCollage, generatePersonaImage } from '../services/geminiService';
+import { generateEnergyCollage, generatePersonaImage, generateRankImage } from '../services/geminiService';
 import { fetchWeatherForecast, WeatherData } from '../services/weatherService';
 import { getBestRebate, getHouseholdTip } from '../utils/rebateUtils';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -18,6 +18,7 @@ const BillDisplay: React.FC<BillDisplayProps> = ({ data }) => {
   const [copied, setCopied] = useState(false);
   const [collageImage, setCollageImage] = useState<string | null>(null);
   const [personaImage, setPersonaImage] = useState<string | null>(null);
+  const [rankImage, setRankImage] = useState<string | null>(null);
   const [isGeneratingCollage, setIsGeneratingCollage] = useState(false);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [isLoadingWeather, setIsLoadingWeather] = useState(false);
@@ -26,18 +27,18 @@ const BillDisplay: React.FC<BillDisplayProps> = ({ data }) => {
   const bestRebate = getBestRebate(data);
   const householdTip = getHouseholdTip(data);
 
-  // Automatically generate persona image on load
+  // Automatically generate rank image on load
   useEffect(() => {
     let mounted = true;
-    const fetchPersona = async () => {
-      if (data.personaVisualPrompt) {
-        const img = await generatePersonaImage(data.personaVisualPrompt);
-        if (mounted && img) setPersonaImage(img);
+    const fetchRankImage = async () => {
+      if (data.rankVisualPrompt) {
+        const img = await generateRankImage(data.rankVisualPrompt);
+        if (mounted && img) setRankImage(img);
       }
     };
-    fetchPersona();
+    fetchRankImage();
     return () => { mounted = false; };
-  }, [data.personaVisualPrompt]);
+  }, [data.rankVisualPrompt]);
 
   // Automatically generate collage on load
   useEffect(() => {
@@ -106,31 +107,88 @@ const BillDisplay: React.FC<BillDisplayProps> = ({ data }) => {
 
   return (
     <div className="w-full max-w-4xl mx-auto animate-fade-in space-y-8">
-      {/* Persona Profile Card */}
+      {/* Energy Saver Rank Card */}
       <div className="bg-gradient-to-br from-brand-700 to-brand-900 rounded-2xl shadow-xl overflow-hidden text-white">
         <div className="flex flex-col md:flex-row items-center p-8 gap-8">
           
-          {/* Avatar Section */}
+          {/* Rank Badge Section with Circular Progress */}
           <div className="relative flex-shrink-0">
-            <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white/20 shadow-2xl overflow-hidden bg-white/10 flex items-center justify-center">
-              {personaImage ? (
-                <img src={personaImage} alt={data.personaTitle} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
-              )}
+            {/* Circular Progress Border */}
+            <svg className="w-40 h-40 md:w-48 md:h-48 transform -rotate-90" viewBox="0 0 100 100">
+              {/* Background circle */}
+              <circle
+                cx="50"
+                cy="50"
+                r="45"
+                fill="none"
+                stroke="rgba(255, 255, 255, 0.1)"
+                strokeWidth="6"
+              />
+              {/* Progress circle - calculate based on percentToNextLevel */}
+              {data.percentToNextLevel > 0 && (() => {
+                // Calculate progress percentage (inverse - more savings needed = less progress)
+                // For simplicity, we'll show progress based on rank level
+                const rankProgress = {
+                  'Amateur': 25,
+                  'Pro': 50,
+                  'All-Star': 75,
+                  'G.O.A.T.': 100
+                };
+                const progress = rankProgress[data.energySaverRank] || 0;
+                const circumference = 2 * Math.PI * 45;
+                const offset = circumference - (progress / 100) * circumference;
+                
+                return (
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    fill="none"
+                    stroke="rgba(255, 255, 255, 0.6)"
+                    strokeWidth="6"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={offset}
+                    strokeLinecap="round"
+                    className="transition-all duration-500"
+                  />
+                );
+              })()}
+            </svg>
+            
+            {/* Rank Image */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-32 h-32 md:w-36 md:h-36 rounded-full border-4 border-white/20 shadow-2xl overflow-hidden bg-white/10 flex items-center justify-center">
+                {rankImage ? (
+                  <img src={rankImage} alt={data.energySaverRank} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+                )}
+              </div>
             </div>
-            {/* Status Badge */}
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-ppl-orange text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg uppercase tracking-wider whitespace-nowrap">
-              {data.billMonth} Review
+            
+            {/* Status Badge with Percentage to Next Level */}
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-ppl-orange text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg uppercase tracking-wider min-w-max">
+              <div className="text-center">
+                <div>{data.billMonth} Review</div>
+                {data.percentToNextLevel > 0 && data.nextRank && (
+                  <div className="text-[10px] normal-case mt-0.5 font-semibold">
+                    Save another {data.percentToNextLevel.toFixed(0)}% to be {data.nextRank}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Text Content */}
-          <div className="flex-1 text-center md:text-left space-y-3">
-            
-            <p className="text-brand-100 text-lg leading-relaxed font-light">
-              <span className="font-bold text-3xl text-white">HEY NEIGHBOR!</span> {data.personaDescription.replace(/^HEY NEIGHBOR![\s,]*/i, '')}
-            </p>
+          <div className="flex-1 text-center md:text-left space-y-4">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                Energy Saver Rank: <span className="text-ppl-paleGreen">{data.energySaverRank}</span>
+              </h2>
+              <p className="text-brand-100 text-base md:text-lg leading-relaxed font-light">
+                {data.rankDescription}
+              </p>
+            </div>
 
             <div className="pt-4 flex flex-wrap gap-4 justify-center md:justify-start">
               <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/10">
@@ -211,6 +269,7 @@ const BillDisplay: React.FC<BillDisplayProps> = ({ data }) => {
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="p-6 border-b border-slate-100">
           <h3 className="text-lg font-bold text-slate-900">7-Day Weather Forecast</h3>
+          <p>Keep your winning streak alive with these tips tailored specifically for your local weather.</p>
         </div>
 
         <div className="p-6">
@@ -331,7 +390,8 @@ const BillDisplay: React.FC<BillDisplayProps> = ({ data }) => {
       </div>
       */}
 
-      {/* JSON Display Section */}
+      {/* JSON Display Section - Hidden */}
+      {/*
       <div className="bg-slate-900 rounded-xl shadow-xl overflow-hidden border border-slate-800">
         <div className="px-4 py-3 bg-slate-800 border-b border-slate-700 flex justify-between items-center">
           <div className="flex items-center gap-2">
@@ -361,6 +421,7 @@ const BillDisplay: React.FC<BillDisplayProps> = ({ data }) => {
       <div className="text-center text-sm text-slate-500">
         Data extracted from {data.billMonth} statement for Account {data.accountNumber}
       </div>
+      */}
     </div>
   );
 };

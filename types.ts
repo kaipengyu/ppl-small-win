@@ -26,10 +26,12 @@ export interface BillData {
   amountComparisonSentence: string;
   energyTipSentence: string;
   monthlyComparison: MonthlyComparison;
-  // Persona Fields
-  personaTitle: string;
-  personaDescription: string;
-  personaVisualPrompt: string;
+  // Energy Saver Rank Fields
+  energySaverRank: 'G.O.A.T.' | 'All-Star' | 'Pro' | 'Amateur';
+  percentToNextLevel: number; // Percentage reduction needed to reach next level (0 if already at G.O.A.T.)
+  nextRank: string; // Name of the next rank level (empty string if already at G.O.A.T.)
+  rankDescription: string; // Description in Little Wins tone
+  rankVisualPrompt: string; // Prompt for generating 3D AI rank image
 }
 
 export interface ParsedResponse {

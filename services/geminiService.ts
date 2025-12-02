@@ -37,11 +37,13 @@ const billSchema: Schema = {
       },
       required: ["month", "labelPreviousYear", "labelCurrentYear", "usagePrevious", "usageCurrent", "tempPrevious", "tempCurrent", "dailyCostPrevious", "dailyCostCurrent"]
     },
-    personaTitle: { type: Type.STRING, description: "A creative, gamified title for the user based on their energy usage trend (e.g., 'The Eco-Wizard', 'The Power Pioneer')." },
-    personaDescription: { type: Type.STRING, description: "A neighborly, 2-3 sentence explanation of the usage trend. It should start directly with the observation (e.g. 'I took a look at your bill...') without a greeting." },
-    personaVisualPrompt: { type: Type.STRING, description: "A prompt to generate a realistic photo of a friendly African American woman neighbor giving an encouraging nod or smile. She should look like she is interacting with a neighbor. Based on the usage trend, her expression should be: Happy/Proud if usage decreased, Encouraging/Supportive if usage increased." }
+    energySaverRank: { type: Type.STRING, description: "Energy Saver Rank based SOLELY on usage reduction percentage: 'G.O.A.T.' (>20% usage reduction), 'All-Star' (10-20% usage reduction), 'Pro' (1-10% usage reduction), or 'Amateur' (no reduction or increased usage). Rank is based on usage only, not cost." },
+    percentToNextLevel: { type: Type.NUMBER, description: "Additional percentage reduction needed to reach the next rank level. Calculate: If Amateur, need 1% total reduction (so if at 0%, return 1). If Pro, need 10% total reduction (so if at 5%, return 5 more). If All-Star, need 20% total reduction (so if at 12%, return 8 more). If G.O.A.T., return 0." },
+    nextRank: { type: Type.STRING, description: "Name of the next rank level: 'Pro' if Amateur, 'All-Star' if Pro, 'G.O.A.T.' if All-Star, empty string if already G.O.A.T." },
+    rankDescription: { type: Type.STRING, description: "A warm, encouraging paragraph in Little Wins tone explaining the user's Energy Saver Rank. Should focus on micro-wins, building confidence, and one doable next step. Start with acknowledging what they're doing right, then mention a small win they can take today." },
+    rankVisualPrompt: { type: Type.STRING, description: "A prompt to generate a 3D AI cartoon character representing the Energy Saver Rank. The character should be cute, friendly, and colorful. For G.O.A.T.: a cartoon goat character (a cute goat with friendly expression). For All-Star: a cartoon star character (a cute star with eyes and friendly expression). For Pro: a cartoon character representing professionalism (like a cartoon athlete or professional character). For Amateur: a cartoon character representing a beginner (like a cute cartoon seedling or young character ready to learn). The character should be holding or displaying elements related to energy efficiency (like a lightbulb, wind turbine, or energy symbol). Style should be 3D rendered, colorful, cute, and inviting - like a cartoon mascot." }
   },
-  required: ["customerName", "customerFirstName", "serviceAddress", "meterNumber", "accountNumber", "amountDue", "dueDate", "supplyCharges", "deliveryCharges", "energyTip", "priceToCompare", "billMonth", "amountComparisonSentence", "energyTipSentence", "monthlyComparison", "personaTitle", "personaDescription", "personaVisualPrompt"]
+  required: ["customerName", "customerFirstName", "serviceAddress", "meterNumber", "accountNumber", "amountDue", "dueDate", "supplyCharges", "deliveryCharges", "energyTip", "priceToCompare", "billMonth", "amountComparisonSentence", "energyTipSentence", "monthlyComparison", "energySaverRank", "percentToNextLevel", "nextRank", "rankDescription", "rankVisualPrompt"]
 };
 
 export const analyzeBill = async (base64Pdf: string): Promise<BillData> => {
@@ -60,29 +62,59 @@ export const analyzeBill = async (base64Pdf: string): Promise<BillData> => {
           {
             text: `Analyze this electric bill PDF.
             
-            LOGIC FOR PERSONA:
-            Compare the 'Current 12 Months' usage or the specific month usage to the previous year.
+            LOGIC FOR ENERGY SAVER RANK:
+            Compare the current month's usage to the previous year's same month.
+            Calculate the percentage change in usage: ((usageCurrent - usagePrevious) / usagePrevious) * 100
+            Note: A negative percentage means usage decreased (good), positive means usage increased.
             
-            TONE: Neighborly. Observant. Friendly. Grounded. Encourages by showing what others are doing.
-            - The tone feels like the kind neighbor who gives you a quiet nod of encouragement.
-            - Never pushy. Never salesy.
-            - Builds confidence by giving context from the community.
+            Rank Assignment (based SOLELY on usage reduction, NOT cost):
+            - G.O.A.T.: Usage decreased by >20% (usageCurrent < usagePrevious by more than 20%)
+            - All-Star: Usage decreased by 10-20% (usageCurrent < usagePrevious by 10-20%)
+            - Pro: Usage decreased by 1-10% (usageCurrent < usagePrevious by 1-10%)
+            - Amateur: Usage increased OR no decrease (usageCurrent >= usagePrevious)
+            
+            IMPORTANT: Rank is based ONLY on usage reduction percentage. Cost may increase due to rate changes, but that doesn't affect the rank if usage decreased.
+            
+            Percentage to Next Level Calculation:
+            Calculate the current usage reduction percentage: ((usagePrevious - usageCurrent) / usagePrevious) * 100
+            - If Amateur (0% or negative reduction): Need 1% total reduction to reach Pro, so return 1 (or 1 - current% if already positive)
+            - If Pro (1-10% reduction): Need 10% total reduction to reach All-Star, so return (10 - current%)
+            - If All-Star (10-20% reduction): Need 20% total reduction to reach G.O.A.T., so return (20 - current%)
+            - If G.O.A.T. (>20% reduction): Return 0
+            
+            Next Rank Assignment:
+            - If Amateur: nextRank = "Pro"
+            - If Pro: nextRank = "All-Star"
+            - If All-Star: nextRank = "G.O.A.T."
+            - If G.O.A.T.: nextRank = "" (empty string)
+            
+            TONE: Little Wins Tone
+            Warm. Encouraging. Calm. Focused on micro-wins and building confidence.
+            
+            Core voice:
+            Light, friendly, reassuring. Feels like a quiet coach helping you find momentum. Always focuses on one doable next step.
             
             How it sounds:
-            - "I took a look at your bill and noticed a few things I see in a lot of homes around you."
-            - "Many customers in your area start with this step because it feels simple and makes a real difference."
+            - "You are doing more right than you think."
+            - "Here is a small win you can take today."
+            - "Let me show you something simple in your bill that can help you feel more in control."
+            - "This change may look small, but it can make your month feel easier."
+            - "If you want another idea, I can help you find the next one."
+            
+            When reviewing a bill:
+            - "I looked at your usage and saw one place where a small change could help bring your bill down a bit."
+            - "Here is a simple step that gives people like you a quick win."
+            - "This one usually feels easy and has a fast payoff."
+            - "If you would like to try one more, I can help you find it."
             
             Emotional goal:
-            - You are not alone.
-            - You are part of a capable community.
-            - You can do this at your own pace.
-            - PPL has your back.
-
-            1. If usage decreased significantly (>10%): Title: "The Eco-Guardian". Description should highlight how their usage looks like other efficient homes in the area.
-            2. If usage is about the same: Title: "The Steady Captain". Description should mention many neighbors also see consistent usage and start with small steps.
-            3. If usage increased: Title: "The High-Voltage Hero". Description should note that they aren't the only one seeing this pattern and suggest what usually works next.
+            Micro serotonin. Relief. Momentum. A sense that progress is possible right now.
             
-            IMPORTANT: The 'personaDescription' should NOT start with "HEY NEIGHBOR!". It should start directly with the neighborly observation.
+            For rankDescription:
+            - Start with acknowledging what they're doing right or a small win they've achieved
+            - Focus on one simple, doable next step
+            - Use warm, encouraging language
+            - Make them feel that progress is possible right now
             
             Extract all data into the JSON structure:`
           }
@@ -126,6 +158,32 @@ export const generatePersonaImage = async (prompt: string): Promise<string> => {
     throw new Error("No image generated");
   } catch (error) {
     console.error("Error generating persona image:", error);
+    return ""; // Return empty string on failure to fail gracefully in UI
+  }
+};
+
+export const generateRankImage = async (prompt: string): Promise<string> => {
+  try {
+    const ai = getAiClient();
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-image',
+      contents: {
+        parts: [
+          {
+            text: `Generate a high quality 3D AI rendered cartoon character representing an Energy Saver Rank. The character should be cute, friendly, and colorful - like a cartoon mascot. The character should be shown from the front, centered, with a warm and friendly expression. Style should be 3D rendered, cute, and gamified - similar to animated cartoon characters. ${prompt}`
+          }
+        ]
+      }
+    });
+
+    for (const part of response.candidates?.[0]?.content?.parts || []) {
+      if (part.inlineData) {
+        return `data:image/png;base64,${part.inlineData.data}`;
+      }
+    }
+    throw new Error("No image generated");
+  } catch (error) {
+    console.error("Error generating rank image:", error);
     return ""; // Return empty string on failure to fail gracefully in UI
   }
 };
