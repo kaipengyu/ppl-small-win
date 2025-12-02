@@ -3,6 +3,8 @@ import FileUpload from './components/FileUpload';
 import BillDisplay from './components/BillDisplay';
 import { BillData } from './types';
 import { analyzeBill, fileToBase64 } from './services/geminiService';
+import backgroundImage from './src/PPL02400.webp';
+import logoImage from './src/logo-color-desktop.svg';
 
 const App: React.FC = () => {
   const [billData, setBillData] = useState<BillData | null>(null);
@@ -35,60 +37,69 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+    <div 
+      className="min-h-screen font-sans text-slate-900 relative"
+      style={{
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center text-white font-bold">
-              B
-            </div>
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">PPL Billing AI</h1>
-          </div>
+      <header className="bg-white/90 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-50 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-center">
+          <img 
+            src={logoImage} 
+            alt="PPL Logo" 
+            className="h-14 w-auto"
+          />
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative ${!billData ? 'flex items-center justify-center min-h-[calc(100vh-5rem)]' : 'py-8'}`}>
         
-        {/* Hero Section (only visible when no data) */}
-        {!billData && !isLoading && (
-          <div className="text-center mb-12 max-w-2xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-             Your winning streak starts here
-            </h2>
-            <p className="text-lg text-slate-600 mb-8">
-           Small steps to save energy make a big difference in your comfort, and your bill. Just upload your bill PDF, and we’ll use AI to examine the data and find some quick, little wins… just for you.
- 
-            </p>
-          </div>
-        )}
-
         {/* Upload Section */}
         {!billData && (
-          <div className="max-w-2xl mx-auto mb-12">
-            <FileUpload onFileSelect={handleFileSelect} isLoading={isLoading} />
-            
-            {/* Loading State */}
-            {isLoading && (
-              <div className="mt-8 text-center space-y-4">
-                <div className="inline-block relative w-16 h-16">
-                  <div className="absolute top-0 left-0 w-full h-full border-4 border-brand-100 rounded-full"></div>
-                  <div className="absolute top-0 left-0 w-full h-full border-4 border-brand-500 rounded-full border-t-transparent animate-spin"></div>
+          <div className="max-w-2xl mx-auto w-full">
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl">
+              {/* Hero Section (only visible when no data) */}
+              {!isLoading && (
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+                   Your winning streak starts here
+                  </h2>
+                  <p className="text-lg text-slate-600 mb-8">
+                 Small steps to save energy make a big difference in your comfort, and your bill. Just upload your bill PDF, and we'll use AI to examine the data and find some quick, little wins… just for you.
+   
+                  </p>
                 </div>
-                <p className="text-slate-600 font-medium">Analyzing PDF with AI...</p>
-                <p className="text-sm text-slate-400">This may take a few seconds</p>
-              </div>
-            )}
+              )}
+              
+              <FileUpload onFileSelect={handleFileSelect} isLoading={isLoading} />
+              
+              {/* Loading State */}
+              {isLoading && (
+                <div className="mt-8 text-center space-y-4">
+                  <div className="inline-block relative w-16 h-16">
+                    <div className="absolute top-0 left-0 w-full h-full border-4 border-brand-100 rounded-full"></div>
+                    <div className="absolute top-0 left-0 w-full h-full border-4 border-brand-500 rounded-full border-t-transparent animate-spin"></div>
+                  </div>
+                  <p className="text-slate-600 font-medium">Analyzing PDF with AI...</p>
+                  <p className="text-sm text-slate-400">This may take a few seconds</p>
+                </div>
+              )}
 
-            {/* Error State */}
-            {error && (
-              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex items-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 flex-shrink-0">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                </svg>
-                {error}
-              </div>
-            )}
+              {/* Error State */}
+              {error && (
+                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex items-center gap-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 flex-shrink-0">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                  </svg>
+                  {error}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
